@@ -1,0 +1,5 @@
+# Upload through GitHub's website
+
+For the source ZIP, extract it on your computer first. Open the existing repository, choose **Add file → Upload files**, then drag the contents of the extracted folder into the upload area. Do not upload the ZIP itself. The files need to be at repository root: `app/`, `.github/`, `settings.gradle.kts`, and `build.gradle.kts` must be visible next to README.md.
+
+Commit to `main`, then inspect Actions → Build Glyph Breathe APK. Uploading source is not the same as building the APK; only install the APK from a successful workflow run.
