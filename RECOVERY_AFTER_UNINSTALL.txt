@@ -1,0 +1,11 @@
+# Restore after uninstall
+
+Android does not promise to run an APK's cleanup code during uninstall. Before uninstalling Glyph Breathe, open it and select **Restore all saved values**.
+
+If the APK has already been removed, use the separate `restore-glyph.sh` script from a root-capable terminal such as Termux:
+
+```sh
+su -c 'sh /sdcard/Download/restore-glyph.sh'
+```
+
+The script restores only the exact scalar endpoint `/sys/class/leds/aw210xx_led/all_white_leds_br`. It refuses any different path and only deletes the saved backup after a successful restore. If the node is missing or a write fails, it retains the backup for retry. It cannot restore unrelated application state or Nothing OS animation settings.
