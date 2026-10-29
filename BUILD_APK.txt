@@ -1,12 +1,33 @@
 # Build Glyph Breathe
 
-The GitHub Actions workflow builds a debug APK using JDK 17, Android SDK Platform 35, Android Gradle Plugin 8.7.3 and Gradle 8.9.
+The GitHub Actions workflow builds a debug APK with JDK 17, Android SDK Platform 35, Android Gradle Plugin 8.7.3 and Gradle 8.9.
 
-1. Push the project to the default branch `main`.
-2. Open Actions → Build Glyph Breathe APK.
-3. Wait for the workflow to complete. A failed run is not an APK.
-4. For a successful run, download the `GlyphBreathe-debug-apk` artifact and extract `app-debug.apk`.
+1. Open **Actions → Build Glyph Breathe APK**.
+2. Wait for the run to complete successfully.
+3. Download the `GlyphBreathe-debug-apk` artifact and extract `app-debug.apk`.
 
-No signing key or secret is required for the first debug build. However, GitHub Actions can generate a different default debug key on later runs, so later APKs may not install as in-place upgrades. For stable updates, generate a throwaway Android debug keystore with the standard alias/passwords (alias `androiddebugkey`, store password `android`, key password `android`), base64-encode it, and store the result as an Actions repository secret named `GLYPH_DEBUG_KEYSTORE_BASE64`. Do not commit the keystore or its Base64 string to the repository. The workflow can be extended to load this secret in a controlled step if stable signing is required.
+## Recommended: configure stable signing before first installation
 
-This project has not yet been tested on the target Evolution X phone. Build success is not hardware verification.
+By default, a hosted GitHub runner uses a temporary debug signing key. A later run can produce an APK Android will not install over the earlier one as an update. If you want to improve the app over time without uninstalling each version, configure a stable debug keystore as a repository Actions secret **before installing the first APK**.
+
+On Windows, open PowerShell where Java's `keytool` is available and run:
+
+```powershell
+keytool -genkeypair -v -keystore glyph-breathe-debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+$bytes = [IO.File]::ReadAllBytes("$PWD\glyph-breathe-debug.keystore")
+[Convert]::ToBase64String($bytes) | Set-Clipboard
+```
+
+Then open repository **Settings → Secrets and variables → Actions → New repository secret**:
+- Name: `GLYPH_DEBUG_KEYSTORE_BASE64`
+- Secret: paste the clipboard contents.
+
+The workflow reads this secret only into the runner's environment and writes the keystore to the standard Android debug-key path before building. Never commit the keystore or its Base64 content to the repository.
+
+After saving the secret, open **Actions → Build Glyph Breathe APK → Run workflow** and download the artifact from the successful run. Install that artifact as the first app version. Keep your keystore safe for all future releases.
+
+If you already installed an APK built without this key, Android may require uninstalling that version before the stable-key build can be installed. The external Glyph recovery file is designed to survive an app uninstall, but still use Restore All before uninstalling when possible.
+
+## Hardware limitation
+
+A successful build only proves the APK compiles and packages. It has not been tested on the target phone. The app writes only to `/sys/class/leds/aw210xx_led/all_white_leds_br` and will not function if the Evolution X kernel does not expose that exact writable node.
