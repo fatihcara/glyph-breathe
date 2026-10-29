@@ -1,0 +1,12 @@
+# Build Glyph Breathe
+
+The GitHub Actions workflow builds a debug APK using JDK 17, Android SDK Platform 35, Android Gradle Plugin 8.7.3 and Gradle 8.9.
+
+1. Push the project to the default branch `main`.
+2. Open Actions → Build Glyph Breathe APK.
+3. Wait for the workflow to complete. A failed run is not an APK.
+4. For a successful run, download the `GlyphBreathe-debug-apk` artifact and extract `app-debug.apk`.
+
+No signing key or secret is required for the first debug build. However, GitHub Actions can generate a different default debug key on later runs, so later APKs may not install as in-place upgrades. For stable updates, generate a throwaway Android debug keystore with the standard alias/passwords (alias `androiddebugkey`, store password `android`, key password `android`), base64-encode it, and store the result as an Actions repository secret named `GLYPH_DEBUG_KEYSTORE_BASE64`. Do not commit the keystore or its Base64 string to the repository. The workflow can be extended to load this secret in a controlled step if stable signing is required.
+
+This project has not yet been tested on the target Evolution X phone. Build success is not hardware verification.
