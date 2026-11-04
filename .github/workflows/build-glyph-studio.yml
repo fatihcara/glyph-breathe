@@ -48,6 +48,15 @@ jobs:
             echo "No stable signing key configured; using this runner's temporary debug key."
           fi
 
+      - name: Recompile transparent Gradle bootstrapper for Java 17
+        working-directory: GlyphStudio
+        run: |
+          TMP_DIR="$(mktemp -d)"
+          javac --release 17 -encoding UTF-8 -d "$TMP_DIR" gradle/wrapper/GradleWrapperMain.java
+          jar --create --file gradle/wrapper/gradle-wrapper.jar -C "$TMP_DIR" .
+          javap -verbose -classpath gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain | grep -F 'major version: 61'
+          rm -rf "$TMP_DIR"
+
       - name: Build debug APK with project Gradle wrapper
         working-directory: GlyphStudio
         run: bash ./gradlew --no-daemon --stacktrace assembleDebug
